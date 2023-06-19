@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AbstractUser
 from django.db.models import *
 
 
@@ -34,7 +35,7 @@ class Mailing(Model):
     time = TimeField(verbose_name='Время рассылки', default='00:00:00', **NULLABLE)
     regularity = CharField(max_length=20, verbose_name='Периодичность', choices=REGULARITY, default=REGULARITY[0][0])
     status = CharField(max_length=20, verbose_name='Cтатус рассылки', choices=STATUS, default=STATUS[0][0])
-    client_id = ManyToManyField(Client, **NULLABLE)
+    client = ManyToManyField(Client, verbose_name='Клиент')
 
     def __str__(self):
         return self.name
@@ -74,3 +75,17 @@ class MailingTrying(Model):
     class Meta:
         verbose_name = 'Попытка отправки письма'
         verbose_name_plural = 'Попытки отправок писем'
+
+
+class User(AbstractUser):
+    username = None
+    email = EmailField(unique=True, verbose_name='email')
+    avatar = ImageField(upload_to='media/avatars', verbose_name='Аватар', **NULLABLE)
+    phone_number = CharField(max_length=20, verbose_name='Номер телефона', **NULLABLE)
+    country = CharField(max_length=100, verbose_name='Страна')
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    def __str__(self):
+        return self.email
