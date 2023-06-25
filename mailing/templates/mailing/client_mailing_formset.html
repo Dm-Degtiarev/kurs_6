@@ -1,0 +1,38 @@
+{% extends 'mailing/base.html' %}
+
+{% block title %} {{ title }} {% endblock %}
+
+{% block content %}
+    <form method="POST">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-body">
+                        {% csrf_token %}
+                        <h4 class="card-title">Клиент</h4>
+                        <hr>
+                        {{ form.as_p }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h4 class="card-title">Рассылки</h4>
+                        <hr class="my-4">
+                        {{ formset.management_form }}
+                        {% for form in formset.forms %}
+                                <div class="card-body">
+                                    {{ form.as_p }}
+                                </div>
+                                {% if not forloop.last %}
+                                    <hr class="my-4">
+                                {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% for object in object_list %}
+    {% if object.active_flg %}
+        <div class="card-deck mb-3 text-left">
+            <div class="card mb-4 box-shadow">
+              <div class="card-header">
+                <h3 class="my-0 font-weight-normal">{{ object.fio }}</h3>
+              </div>
+              <div class="card-body">
+                <h5 class="card-title pricing-card-title">Email: {{ object.email }}</h5>
+                <h5 class="card-title pricing-card-title">Комментарий: {{ object.comment }}</h5>
+                <ul class="list-unstyled mt-3 mb-4">
+                  <li style="font-size: 18px;">{{ object.regularity }}</li>
+                </ul>
+                <div class="btn-group d-flex" role="group">
+                    <a href="{% url 'mailing:client_detail' object.pk %}" class="btn btn-lg btn-primary mr-2">Подробнее</a>
+                    <a href="{% url 'mailing:client_update' object.pk %}" class="btn btn-lg btn-primary mr-2">Изменить</a>
+                    <div class="ml-auto">
+                        <a href="{% url 'mailing:client_delete' object.pk %}" class="btn btn-lg btn-danger">Удалить</a>
+                    </div>
+                </div>
+              </div>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}

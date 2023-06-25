@@ -1,7 +1,7 @@
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, AuthenticationForm, SetPasswordForm
 from django import forms
 from transliterate.utils import _
-from mailing.models import User
+from mailing.models import User, Mailing, MailingMessage, MailingTrying, Client
 
 
 class FormStyleMixin:
@@ -37,3 +37,24 @@ class UserPasswordResetForm(FormStyleMixin, PasswordResetForm):
 class UserResetConfirmForm(SetPasswordForm):
     class Meta:
         model = User
+
+class MailingForm(FormStyleMixin, forms.ModelForm):
+    class Meta:
+        model = Mailing
+        exclude = ('active_flg',)
+
+
+class MailingMessageForm(FormStyleMixin, forms.ModelForm):
+    class Meta:
+        model = MailingMessage
+        exclude = ['id',]
+
+class MailingTryingForm(FormStyleMixin, forms.ModelForm):
+    class Meta:
+        model = MailingTrying
+        fields = '__all__'
+
+class ClientForm(FormStyleMixin, forms.ModelForm):
+    class Meta:
+        model = Client
+        fields = ('__all__')
