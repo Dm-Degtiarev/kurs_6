@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from datetime import datetime
 from django.db.models import *
 
 
@@ -10,6 +11,7 @@ class Client(Model):
     fio = CharField(max_length=100, verbose_name='ФИО')
     comment = TextField(verbose_name='Комментарий', **NULLABLE)
     active_flg = BooleanField(verbose_name='Активный', default=True)
+    last_mailing_dttm = DateTimeField(verbose_name='Дата и время последней рассылки', default=datetime.now)
 
     def __str__(self):
         return f"{self.fio} - {self.email}"
@@ -25,9 +27,9 @@ class Client(Model):
 
 class Mailing(Model):
     REGULARITY = (
-        ('Раз в день', 'Раз в день'),
-        ('Раз в неделю', 'Раз в неделю'),
-        ('Раз в месяц', 'Раз в месяц'),
+        (1, 'Раз в день'),
+        (7, 'Раз в неделю'),
+        (30, 'Раз в месяц'),
     )
 
     STATUS = (
@@ -38,7 +40,7 @@ class Mailing(Model):
 
     name = CharField(max_length=150, verbose_name='Наименование рассылки', unique=True)
     time = TimeField(verbose_name='Время рассылки', default='00:00:00', **NULLABLE)
-    regularity = CharField(max_length=20, verbose_name='Периодичность', choices=REGULARITY, default=REGULARITY[0][0])
+    regularity = IntegerField(verbose_name='Периодичность', choices=REGULARITY, default=REGULARITY[0][0])
     status = CharField(max_length=20, verbose_name='Cтатус рассылки', choices=STATUS, default=STATUS[0][0])
     client = ManyToManyField(Client, verbose_name='Клиент', blank=True)
     active_flg = BooleanField(verbose_name='Активный', default=True)
@@ -76,7 +78,7 @@ class MailingTrying(Model):
     )
 
     trying_date = DateTimeField(verbose_name='Дата и время попытки рассылки')
-    mailing = ForeignKey(Mailing, to_field='id', on_delete=CASCADE)
+    mailing = ForeignKey(Mailing, on_delete=CASCADE, verbose_name='Рассылка')
     status = CharField(max_length=10, verbose_name='Статус отправки', choices=STATUS)
     server_response = TextField(verbose_name='Ответ сервера', **NULLABLE)
 
@@ -94,7 +96,6 @@ class User(AbstractUser):
     avatar = ImageField(upload_to='media/avatars', verbose_name='Аватар', **NULLABLE)
     phone_number = CharField(max_length=20, verbose_name='Номер телефона', **NULLABLE)
     country = CharField(max_length=100, verbose_name='Страна')
-    active_flg = BooleanField(verbose_name='Активный', default=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

@@ -3,13 +3,15 @@ from mailing.apps import MailingConfig
 from mailing.views import IndexView, MailingListView, UserLoginView, UserRegistrationView, UserLogoutView, \
     UserPasswordResetView, UserPasswordResetDoneView, UserPasswordResetConfirmView, UserPasswordResetCompleteView, \
     MailingDetailView, MailingCreateView, MailingDeleteView, MailingUpdateView, ClientListView, ClientCreateView, \
-    ClientDeleteView, ClientDetailView, ClientUpdateView
+    ClientDeleteView, ClientDetailView, ClientUpdateView, verify_account, UserVerificationView
 
 app_name = MailingConfig.name
 
 urlpatterns = [
     path('', IndexView.as_view()),
     path('registration/', UserRegistrationView.as_view(), name='registration'),
+    path('verification/', UserVerificationView.as_view(), name='verify'),
+    path('verify/<int:user_pk>/', verify_account, name='verify_account'),
     path('mailing/', MailingListView.as_view(), name='mailing_list'),
     path('mailing/create', MailingCreateView.as_view(), name='mailing_create'),
     path('mailing/<int:pk>/', MailingDetailView.as_view(), name='mailing_detail'),

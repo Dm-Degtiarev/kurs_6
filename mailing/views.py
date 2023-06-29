@@ -1,14 +1,16 @@
+from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView, \
     PasswordResetDoneView, PasswordResetCompleteView
+from django.core.mail import send_mail
 from django.forms import inlineformset_factory,modelformset_factory, BaseModelFormSet
-from django.shortcuts import redirect
-from django.urls import reverse_lazy
+from django.shortcuts import redirect, get_object_or_404
+from django.urls import reverse_lazy, reverse
 from django.conf import settings
 from django.views.generic import TemplateView, CreateView, ListView, DetailView, DeleteView, UpdateView
 from mailing.forms import UserAuthenticationForm, UserRegistartionForm, UserPasswordResetForm, UserResetConfirmForm, \
     MailingForm, MailingMessageForm, ClientForm
-from mailing.models import Mailing, MailingMessage, MailingTrying, Client
+from mailing.models import Mailing, MailingMessage, MailingTrying, Client, User
 
 
 class UserLoginView(LoginView):
@@ -28,9 +30,44 @@ class UserLogoutView(LogoutView):
 class UserRegistrationView(CreateView):
     form_class = UserRegistartionForm
     template_name = 'mailing/user/user_registration.html'
-    success_url = reverse_lazy('mailing:login')
+    success_url = reverse_lazy('mailing:verify')
     extra_context = {
         'title': 'Регистрация'
+    }
+
+    def form_valid(self, form):
+        responce = super().form_valid(form)
+        user = form.save(commit=False)
+        user.is_active = False
+        user.save()
+
+        topic = 'Верификация Skychimp'
+        message = f'Добрый день, {user.first_name}! Подтвердите свою учетную запись, перейдя по этой ссылке: ' \
+                  f'http://localhost:8000{reverse_lazy("mailing:verify_account", kwargs={"user_pk": user.pk})}.'
+        from_email = settings.EMAIL_HOST_USER
+        recipients = [user.email]
+        send_mail(
+            subject=topic,
+            message=message,
+            from_email=from_email,
+            recipient_list=recipients,
+            fail_silently=False
+        )
+
+        return responce
+
+
+def verify_account(request, user_pk):
+    user = get_object_or_404(User, pk=user_pk)
+    user.is_active = True
+    user.save()
+    login(request, user)
+    return redirect(to=reverse('mailing:login'))
+
+class UserVerificationView(TemplateView):
+    template_name = 'mailing/user/user_registration_verify.html'
+    extra_context = {
+        'title': 'Верификация'
     }
 
 class UserPasswordResetView(PasswordResetView):
@@ -88,8 +125,8 @@ class MailingDetailView(LoginRequiredMixin, DetailView):
 
         MailingMessageFormSet = inlineformset_factory(
             Mailing,
-            # MailingMessage,
-            MailingTrying,
+            MailingMessage,
+            # MailingTrying,
             form=MailingMessageForm,
             extra=0,
             can_delete=False
@@ -196,10 +233,18 @@ class ClientDetailView(UpdateView):
             formset=BaseModelFormSet
         )
         if self.request.POST:
-            formset = MailingFormSet(self.request.POST, prefix='mailing', queryset=Mailing.objects.filter(client=client))
+            formset = MailingFormSet(
+                self.request.POST,
+                prefix='mailing',
+                queryset=Mailing.objects.filter(client=client)
+            )
         else:
             initial_data = [{'client': client}]
-            formset = MailingFormSet(initial=initial_data, prefix='mailing', queryset=Mailing.objects.filter(client=client))
+            formset = MailingFormSet(
+                initial=initial_data,
+                prefix='mailing',
+                queryset=Mailing.objects.filter(client=client)
+            )
 
         for form in formset.forms:
             form.fields['client'].initial = client

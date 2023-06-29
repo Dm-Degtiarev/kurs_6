@@ -8,7 +8,7 @@
               <div class="card-body">
                 <h5 class="card-title pricing-card-title">Время рассылки: {{ object.time }}</h5>
                 <ul class="list-unstyled mt-3 mb-4">
-                  <li style="font-size: 18px;">{{ object.regularity }}</li>
+                  <li style="font-size: 18px;">{{ object.get_regularity_display }}</li>
 {#                  <li style="font-size: 18px;">{{ object.get_status_display }}</li>#}
                 </ul>
                 <div class="btn-group d-flex" role="group">
