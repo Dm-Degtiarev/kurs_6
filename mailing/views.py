@@ -8,10 +8,9 @@ from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.conf import settings
 from django.views.generic import TemplateView, CreateView, ListView, DetailView, DeleteView, UpdateView
-
 from blog.models import Blog
 from mailing.forms import UserAuthenticationForm, UserRegistartionForm, UserPasswordResetForm, UserResetConfirmForm, \
-    MailingForm, MailingMessageForm, ClientForm
+    MailingForm, MailingMessageForm, ClientForm, UserForm
 from mailing.models import Mailing, MailingMessage, MailingTrying, Client, User
 
 
@@ -23,11 +22,23 @@ class UserLoginView(LoginView):
     }
 
     def get_success_url(self):
-        return reverse_lazy('mailing:mailing_list')
+        return reverse_lazy('mailing:home')
 
 class UserLogoutView(LogoutView):
     next_page = reverse_lazy('mailing:login')
 
+class UserUpdateView(UpdateView):
+    model = User
+    form_class = UserForm
+    template_name = 'mailing/user/user_update_form.html'
+    success_url = reverse_lazy('mailing:home')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user'] = self.request.user
+        context['title'] = f'Профиль | {self.object}'
+
+        return context
 
 class UserRegistrationView(CreateView):
     form_class = UserRegistartionForm
@@ -302,3 +313,15 @@ class ClientUpdateView(LoginRequiredMixin, UpdateView):
         client = self.get_object()
         context['title'] = f'Редактирование | {client.fio}'
         return context
+
+class MailingReportView(LoginRequiredMixin, TemplateView):
+    template_name = 'mailing/mailing_trying_report.html'
+    mailing_tryings = MailingTrying.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Главная'
+        context['mailing_tryings'] = self.mailing_tryings
+
+        return context
+
