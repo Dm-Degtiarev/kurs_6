@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
+from django.conf import settings
 from dotenv import load_dotenv   # сессионные переменные окружения
 
 
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # "django.middleware.cache.UpdateCacheMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -54,6 +56,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # "django.middleware.cache.FetchFromCacheMiddleware",
+
 ]
 
 ROOT_URLCONF = 'kurs_6.urls'
@@ -155,5 +159,21 @@ CRONJOBS = [
 
 
 AUTH_USER_MODEL = 'mailing.User'
+
+
+LOGIN_REDIRECT_URL = '/'  # Перенаправление после успешного входа в систему
+LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = 'login/'
+
+
+CACHE_ENABLE = os.getenv('CACHE_ENABLE') == 'True'
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": os.getenv('CACHE_LOCATION'),
+    }
+}
 
 

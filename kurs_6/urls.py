@@ -21,6 +21,7 @@ from django.conf import settings
 from mailing.apps import MailingConfig
 
 
+
 app_name = MailingConfig.name
 
 urlpatterns = [

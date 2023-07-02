@@ -1,4 +1,5 @@
 import schedule
+from django.core.cache import cache
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
@@ -79,3 +80,16 @@ def create_mailing_list():
 
 def run_scheduler():
     schedule.every(10).seconds.do(send_message)
+
+
+# CACHE FUNCS
+def get_cache(model):
+    queryset = model.objects.all()
+    if settings.CACHE_ENABLE:
+        key = 'mailing_cache'
+        cache_model = cache.get(key)
+        if cache_model is None:
+            cache_model = queryset
+            cache.set(key, cache_model)
+        return cache_model
+    return queryset
