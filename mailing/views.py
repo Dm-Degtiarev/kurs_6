@@ -3,11 +3,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView, \
     PasswordResetDoneView, PasswordResetCompleteView
 from django.core.mail import send_mail
-from django.forms import inlineformset_factory,modelformset_factory, BaseModelFormSet
+from django.forms import inlineformset_factory, modelformset_factory, BaseModelFormSet
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.conf import settings
 from django.views.generic import TemplateView, CreateView, ListView, DetailView, DeleteView, UpdateView
+
+from blog.models import Blog
 from mailing.forms import UserAuthenticationForm, UserRegistartionForm, UserPasswordResetForm, UserResetConfirmForm, \
     MailingForm, MailingMessageForm, ClientForm
 from mailing.models import Mailing, MailingMessage, MailingTrying, Client, User
@@ -102,9 +104,24 @@ class UserPasswordResetCompleteView(PasswordResetCompleteView):
 
 class IndexView(TemplateView):
     template_name = 'mailing/index.html'
-    extra_context = {
-        "title": 'Главная'
-    }
+    total_mailings = Mailing.objects.count()
+    total_active_mailings = Mailing.objects.filter(status='launched').count()
+    unique_mailings_clients = Mailing.objects.values('client').distinct().count()
+    three_random_blogs = Blog.objects.order_by('?')[:3]
+    success_mailings = MailingTrying.objects.filter(status='success').count()
+    error_mailings = MailingTrying.objects.filter(status='error').count()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Главная'
+        context['total_mailings'] = self.total_mailings
+        context['total_active_mailings'] = self.total_active_mailings
+        context['unique_mailings_clients'] = self.unique_mailings_clients
+        context['three_random_blogs'] = self.three_random_blogs
+        context['success_mailings'] = self.success_mailings
+        context['error_mailings'] = self.error_mailings
+
+        return context
 
 class MailingListView(ListView):
     model = Mailing
@@ -126,7 +143,6 @@ class MailingDetailView(LoginRequiredMixin, DetailView):
         MailingMessageFormSet = inlineformset_factory(
             Mailing,
             MailingMessage,
-            # MailingTrying,
             form=MailingMessageForm,
             extra=0,
             can_delete=False
@@ -158,6 +174,7 @@ class MailingCreateView(CreateView):
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
+        context_data['title'] = 'Создать рассылку'
         MailingMessageFormSet = inlineformset_factory(
             Mailing,
             MailingMessage,
@@ -178,7 +195,7 @@ class MailingDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = f"Удалить: {context['object']}"
+        context['title'] = f"Удалить | {context['object']}"
 
         return context
 
@@ -190,6 +207,7 @@ class MailingUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
+        mailing = self.get_object()
         MailingMessageFormSet = inlineformset_factory(
             Mailing,
             MailingMessage,
@@ -202,6 +220,8 @@ class MailingUpdateView(LoginRequiredMixin, UpdateView):
         else:
             context_data['formset'] = MailingMessageFormSet(instance=self.object)
 
+        context_data['title'] = f'Изменить | {mailing.name}'
+
         return context_data
 
 class ClientListView(ListView):
@@ -210,7 +230,6 @@ class ClientListView(ListView):
     extra_context = {
         'title': 'Клиенты'
     }
-
 
 class ClientDetailView(UpdateView):
     model = Client
@@ -250,6 +269,7 @@ class ClientDetailView(UpdateView):
             form.fields['client'].initial = client
 
         context_data['formset'] = formset
+        context_data['title'] = f'Редактирование | {client.fio}'
         return context_data
 
 class ClientCreateView(CreateView):
@@ -257,7 +277,9 @@ class ClientCreateView(CreateView):
     form_class = ClientForm
     template_name = 'mailing/client_detail.html'
     success_url = reverse_lazy('mailing:client_list')
-
+    extra_context = {
+        'title': 'Создать клиента'
+    }
 
 class ClientDeleteView(DeleteView):
     model = Client
@@ -267,7 +289,7 @@ class ClientDeleteView(DeleteView):
         context = super().get_context_data(**kwargs)
         context['title'] = f"Удалить: {context['object']}"
 
-        return
+        return context
 
 class ClientUpdateView(LoginRequiredMixin, UpdateView):
     model = Client
@@ -275,3 +297,8 @@ class ClientUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'mailing/client_detail.html'
     form_class = ClientForm
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        client = self.get_object()
+        context['title'] = f'Редактирование | {client.fio}'
+        return context

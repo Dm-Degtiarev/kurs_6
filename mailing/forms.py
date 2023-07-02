@@ -43,7 +43,6 @@ class MailingForm(FormStyleMixin, forms.ModelForm):
         model = Mailing
         exclude = ('active_flg',)
 
-
 class MailingMessageForm(FormStyleMixin, forms.ModelForm):
     class Meta:
         model = MailingMessage

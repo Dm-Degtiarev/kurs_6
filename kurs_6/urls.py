@@ -25,5 +25,6 @@ app_name = MailingConfig.name
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('mailing.urls', namespace='mailing'))
+    path('', include('mailing.urls', namespace='mailing')),
+    path('', include('blog.urls', namespace='blog')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
