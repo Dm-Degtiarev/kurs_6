@@ -1,9 +1,11 @@
 from django.contrib.auth import login
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetConfirmView, \
     PasswordResetDoneView, PasswordResetCompleteView
 from django.core.mail import send_mail
 from django.forms import inlineformset_factory, modelformset_factory, BaseModelFormSet
+from django.http import HttpResponseForbidden
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.conf import settings
@@ -14,6 +16,11 @@ from mailing.forms import UserAuthenticationForm, UserRegistartionForm, UserPass
 from mailing.models import Mailing, MailingMessage, MailingTrying, Client, User
 from mailing.services import get_cache
 
+
+class UserListView(PermissionRequiredMixin, ListView):
+    model = User
+    permission_required = 'mailing.setting_the_user_status'
+    template_name = 'mailing/user/user_list.html'
 
 class UserLoginView(LoginView):
     form_class = UserAuthenticationForm
@@ -116,22 +123,16 @@ class UserPasswordResetCompleteView(PasswordResetCompleteView):
 
 class IndexView(TemplateView):
     template_name = 'mailing/index.html'
-    total_mailings = Mailing.objects.count()
-    total_active_mailings = Mailing.objects.filter(status='launched').count()
-    unique_mailings_clients = Mailing.objects.values('client').distinct().count()
-    three_random_blogs = Blog.objects.order_by('?')[:3]
-    success_mailings = MailingTrying.objects.filter(status='success').count()
-    error_mailings = MailingTrying.objects.filter(status='error').count()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Главная'
-        context['total_mailings'] = self.total_mailings
-        context['total_active_mailings'] = self.total_active_mailings
-        context['unique_mailings_clients'] = self.unique_mailings_clients
-        context['three_random_blogs'] = self.three_random_blogs
-        context['success_mailings'] = self.success_mailings
-        context['error_mailings'] = self.error_mailings
+        context['total_mailings'] = Mailing.objects.count()
+        context['total_active_mailings'] = Mailing.objects.filter(active_flg=True).count()
+        context['unique_mailings_clients'] = Mailing.objects.values('client').distinct().count()
+        context['three_random_blogs'] = Blog.objects.order_by('?')[:3]
+        context['success_mailings'] = MailingTrying.objects.filter(status='success').count()
+        context['error_mailings'] = MailingTrying.objects.filter(status='error').count()
 
         return context
 
@@ -177,10 +178,15 @@ class MailingCreateView(CreateView):
     def form_valid(self, form):
         context = self.get_context_data()
         formset = context['formset']
+        mailing = form.save()
+
         if form.is_valid() and formset.is_valid():
             self.object = form.save()
             formset.instance = self.object
             formset.save()
+            mailing.author = self.request.user
+            mailing.save()
+
             return redirect(self.get_success_url())
 
         return self.render_to_response(self.get_context_data(form=form, formset=formset))
@@ -217,6 +223,17 @@ class MailingUpdateView(LoginRequiredMixin, UpdateView):
     form_class = MailingForm
     template_name = 'mailing/mailing_mailingmessage_formset.html'
     success_url = reverse_lazy('mailing:mailing_list')
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        user = self.request.user
+
+        if not user.has_perm('mailing.setting_the_mailing_status'):
+            form.fields.pop('active_flg')
+        else:
+            form.fields = {'active_flg': form.fields['active_flg']}
+
+        return form
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
@@ -294,6 +311,14 @@ class ClientCreateView(CreateView):
         'title': 'Создать клиента'
     }
 
+    def form_valid(self, form):
+        client = form.save()
+        client.user = self.request.user
+        client.author = self.request.user
+        client.save()
+
+        return super().form_valid(form)
+
 class ClientDeleteView(DeleteView):
     model = Client
     success_url = reverse_lazy('mailing:client_list')
@@ -318,12 +343,24 @@ class ClientUpdateView(LoginRequiredMixin, UpdateView):
 
 class MailingReportView(LoginRequiredMixin, TemplateView):
     template_name = 'mailing/mailing_trying_report.html'
-    mailing_tryings = MailingTrying.objects.all()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Главная'
-        context['mailing_tryings'] = self.mailing_tryings
+        context['title'] = 'Отчет по рассылкам'
+        context['mailing_tryings'] = MailingTrying.objects.order_by('-trying_date', 'mailing').all()
 
         return context
 
+
+@permission_required(perm='mailing.setting_the_user_status')
+def set_user_status(request, pk):
+    obj = get_object_or_404(User, pk=pk)
+    if obj.is_superuser:
+        return HttpResponseForbidden()
+    if obj.is_active:
+        obj.is_active = False
+    else:
+        obj.is_active = True
+    obj.save()
+
+    return redirect(request.META.get('HTTP_REFERER'))

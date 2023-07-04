@@ -6,4 +6,4 @@ from django import forms
 class BlogForm(FormStyleMixin, forms.ModelForm):
     class Meta:
         model = Blog
-        exclude = ('publicate_date', 'views_count')
+        exclude = ('publicate_date', 'views_count', 'author')

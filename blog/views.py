@@ -41,6 +41,14 @@ class BlogCreateView(LoginRequiredMixin, CreateView):
         'title': 'Создать рассылку'
     }
 
+    def form_valid(self, form):
+        blog = form.save()
+        blog.user = self.request.user
+        blog.author = self.request.user
+        blog.save()
+
+        return super().form_valid(form)
+
 class BlogDeleteView(LoginRequiredMixin, DeleteView):
     model = Blog
     success_url = reverse_lazy('blog:blog_list')

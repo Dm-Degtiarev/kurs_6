@@ -13,10 +13,12 @@
                 </ul>
                 <div class="btn-group d-flex" role="group">
                     <a href="{% url 'mailing:client_detail' object.pk %}" class="btn btn-lg btn-primary mr-2">Подробнее</a>
-                    <a href="{% url 'mailing:client_update' object.pk %}" class="btn btn-lg btn-primary mr-2">Изменить</a>
-                    <div class="ml-auto">
-                        <a href="{% url 'mailing:client_delete' object.pk %}" class="btn btn-lg btn-danger">Удалить</a>
-                    </div>
+                    {% if request.user == object.author or perms.mailing.setting_the_user_status %}
+                        <a href="{% url 'mailing:client_update' object.pk %}" class="btn btn-lg btn-primary mr-2">Изменить</a>
+                        <div class="ml-auto">
+                            <a href="{% url 'mailing:client_delete' object.pk %}" class="btn btn-lg btn-danger">Удалить</a>
+                        </div>
+                    {% endif %}
                 </div>
               </div>
             </div>

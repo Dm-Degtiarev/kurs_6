@@ -47,7 +47,7 @@ class UserResetConfirmForm(SetPasswordForm):
 class MailingForm(FormStyleMixin, forms.ModelForm):
     class Meta:
         model = Mailing
-        exclude = ('active_flg',)
+        exclude = ('author',)
 
 class MailingMessageForm(FormStyleMixin, forms.ModelForm):
     class Meta:
@@ -62,4 +62,4 @@ class MailingTryingForm(FormStyleMixin, forms.ModelForm):
 class ClientForm(FormStyleMixin, forms.ModelForm):
     class Meta:
         model = Client
-        fields = ('__all__')
+        exclude = ('active_flg', 'author')

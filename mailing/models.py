@@ -1,3 +1,5 @@
+from django.contrib.auth.base_user import BaseUserManager
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from datetime import datetime
 from django.db.models import *
@@ -12,6 +14,7 @@ class Client(Model):
     comment = TextField(verbose_name='Комментарий', **NULLABLE)
     active_flg = BooleanField(verbose_name='Активный', default=True)
     last_mailing_dttm = DateTimeField(verbose_name='Дата и время последней рассылки', default=datetime.now)
+    author = ForeignKey("mailing.User", on_delete=CASCADE, verbose_name='Автор', **NULLABLE)
 
     def __str__(self):
         return f"{self.fio} - {self.email}"
@@ -44,10 +47,14 @@ class Mailing(Model):
     status = CharField(max_length=20, verbose_name='Cтатус рассылки', choices=STATUS, default=STATUS[0][0])
     client = ManyToManyField(Client, verbose_name='Клиент', blank=True)
     active_flg = BooleanField(verbose_name='Активный', default=True)
+    author = ForeignKey("mailing.User", on_delete=CASCADE, verbose_name='Автор', **NULLABLE)
 
     class Meta:
         verbose_name = 'Рассылка'
         verbose_name_plural = 'Рассылки'
+        permissions = [
+            ('setting_the_mailing_status', 'Сan set mailing status'),
+        ]
 
 
     def __str__(self):
@@ -89,7 +96,6 @@ class MailingTrying(Model):
         verbose_name = 'Попытка отправки письма'
         verbose_name_plural = 'Попытки отправок писем'
 
-
 class User(AbstractUser):
     username = None
     email = EmailField(unique=True, verbose_name='email')
@@ -106,3 +112,30 @@ class User(AbstractUser):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+        permissions = [
+            ('setting_the_user_status', 'Сan set user status'),
+        ]
+
+class UserManager(BaseUserManager):
+    use_in_migrations = True
+
+    def _create_user(self, email, password, **extra_fields):
+        if not email:
+            raise ValueError("Необходимо указать email")
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.password = make_password(password)
+        user.save(using=self._db)
+
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Суперюзер должен иметь is_staff=True")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Суперюзер должен иметь is_superuser=True")
+
+        return self._create_user(email, password, **extra_fields)

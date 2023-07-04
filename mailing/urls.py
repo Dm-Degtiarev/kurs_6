@@ -1,10 +1,11 @@
+from django.contrib.auth.decorators import login_required
 from django.urls import path
 from mailing.apps import MailingConfig
 from mailing.views import IndexView, MailingListView, UserLoginView, UserRegistrationView, UserLogoutView, \
     UserPasswordResetView, UserPasswordResetDoneView, UserPasswordResetConfirmView, UserPasswordResetCompleteView, \
     MailingDetailView, MailingCreateView, MailingDeleteView, MailingUpdateView, ClientListView, ClientCreateView, \
     ClientDeleteView, ClientDetailView, ClientUpdateView, verify_account, UserVerificationView, UserUpdateView, \
-    MailingReportView
+    MailingReportView, set_user_status, UserListView
 
 
 app_name = MailingConfig.name
@@ -33,4 +34,6 @@ urlpatterns = [
     path('password/reset/confirm/<uidb64>/<token>/', UserPasswordResetConfirmView.as_view(),
          name='password_reset_confirm'),
     path('password/reset/complete/', UserPasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('users_list/', login_required(UserListView.as_view()), name='users_list'),
+    path('users/status/<int:pk>/', set_user_status, name='users_status'),
 ]

@@ -9,6 +9,7 @@ class Blog(Model):
     image = ImageField(upload_to='blog_images', verbose_name='Изображение', **NULLABLE)
     views_count = IntegerField(max_length=15, default=0, verbose_name='Количество просмотров')
     publicate_date = DateField(default=date.today, verbose_name='Количество просмотров')
+    author = ForeignKey("mailing.User", on_delete=CASCADE, verbose_name='Автор', **NULLABLE)
 
     def __str__(self):
         return self.heading

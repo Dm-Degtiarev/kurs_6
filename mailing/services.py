@@ -51,7 +51,7 @@ def send_message():
 
 def create_mailing_list():
     mailing_list = []
-    mailings = Mailing.objects.filter(status='launched')
+    mailings = Mailing.objects.filter(status='launched', active_flg=True)
 
     for mailing in mailings:
         if mailing.time <= datetime.now().time():

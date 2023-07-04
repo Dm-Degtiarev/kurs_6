@@ -1,0 +1,36 @@
+<style>
+  .table td {
+    word-break: break-all;
+    max-width: 300px; /* Пример значения ширины, вы можете настроить его по своему усмотрению */
+  }
+</style>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Почта</th>
+      <th>Имя</th>
+      <th>Статус</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for object in object_list %}
+        {% if not item.is_superuser %}
+            <tr>
+                <td> {{ object.email }}</td>
+                <td>{{ object.username }}</td>
+                <td>
+                    {% if perms.mailing.setting_the_user_status %}
+                        {% if object.is_active %}
+                            <a href="{% url 'mailing:users_status' object.pk %}" class="btn btn-outline-danger">Заблокировать</a>
+                        {% else %}
+                            <a href="{% url 'mailing:users_status' object.pk %}"
+                               class="btn btn-success">Разблокировать</a>
+                        {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+        {% endif %}
+    {% endfor %}
+  </tbody>
+</table>
