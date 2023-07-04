@@ -1,8 +1,12 @@
 {% extends 'mailing/base.html' %}
 
-{% block tittle %} Рассылки {% endblock %}
+{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-    {% include 'mailing/includes/inc_mailing_card.html' %}
+    <div style="text-align: center;">
+        <a href="{% url 'mailing:mailing_create' %}" class="btn btn-lg btn-success" style="margin-bottom: 20px;">Создать рассылку</a>
+    </div>
+    <div>
+        {% include 'mailing/includes/inc_mailing_card.html' %}
+    </div>
 {% endblock %}
-

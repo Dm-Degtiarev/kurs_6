@@ -1,0 +1,27 @@
+<style>
+  .table td {
+    word-break: break-all;
+    max-width: 300px; /* Пример значения ширины, вы можете настроить его по своему усмотрению */
+  }
+</style>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Дата и время попытки</th>
+      <th>Рассылка</th>
+      <th>Статус отправки</th>
+      <th>Ответ сервера</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for mailing_trying in mailing_tryings %}
+    <tr {% if mailing_trying.status == 'error' %}class="table-danger" {% elif mailing_trying.status == 'success' %} class="table-success"{% endif %}>
+      <td>{{ mailing_trying.trying_date }}</td>
+      <td>{{ mailing_trying.mailing }}</td>
+      <td>{{ mailing_trying.get_status_display }}</td>
+      <td>{{ mailing_trying.server_response }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

@@ -1,15 +1,29 @@
-<div class="card-deck mb-3 text-left">
-    <div class="card mb-4 box-shadow">
-      <div class="card-header">
-        <h4 class="my-0 font-weight-normal">Название рассылки</h4>
-      </div>
-      <div class="card-body">
-        <h5 class="card-title pricing-card-title">Тема письма</h5>
-        <ul class="list-unstyled mt-3 mb-4">
-          <li>Сообщение</li>
+{% for object in object_list %}
+    {% if object.active_flg or perms.mailing.setting_the_user_status%}
+        <div class="card-deck mb-3 text-left">
+            <div class="card mb-4 box-shadow">
+              <div class="card-header">
+                <h3 class="my-0 font-weight-normal">{{ object.name }}</h3>
+              </div>
+              <div class="card-body">
+                <h5 class="card-title pricing-card-title">Время рассылки: {{ object.time }}</h5>
+                <ul class="list-unstyled mt-3 mb-4">
+                  <li style="font-size: 18px;">{{ object.get_regularity_display }}</li>
+                </ul>
+                <div class="btn-group d-flex" role="group">
+                    <a href="{% url 'mailing:mailing_detail' object.pk %}" class="btn btn-lg btn-primary mr-2">Подробнее</a>
+                    {% if request.user == object.author or perms.mailing.setting_the_mailing_status %}
+                        <a href="{% url 'mailing:mailing_update' object.pk %}" class="btn btn-lg btn-primary mr-2">Изменить</a>
+                    {% endif %}
+                    <div class="ml-auto">
+                        {% if request.user == object.author %}
+                            <a href="{% url 'mailing:mailing_delete' object.pk %}" class="btn btn-lg btn-danger">Удалить</a>
+                        {% endif %}
+                    </div>
 
-        </ul>
-        <button type="button" class="btn btn-lg btn-block btn-primary">Подробнее</button>
-      </div>
-    </div>
-</div>
+                </div>
+              </div>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}

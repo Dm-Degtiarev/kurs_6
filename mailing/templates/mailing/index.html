@@ -1,4 +1,98 @@
 {% extends 'mailing/base.html' %}
 
-{% block tittle %}Главная{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 
+{% block content %}
+    <style>
+        .statistics {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+        }
+
+        .statistic-item {
+            width: calc(33.33% - 20px);
+            margin-right: 20px;
+            background-color: #f2f2f2;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .statistic-item:nth-child(3n) {
+            margin-right: 0;
+        }
+
+        .statistic-value {
+            font-size: 24px;
+            color: #00cc00;
+        }
+
+        .error-value {
+            color: #ff0000;
+        }
+
+        .blog-list {
+            margin-top: 20px;
+        }
+
+        .blog-item {
+            background-color: #f9f9f9;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .section-divider {
+            border-bottom: 2px solid #ccc;
+            margin-bottom: 20px;
+        }
+    </style>
+
+    <div class="section">
+        <h2 class="section-title">Статистика:</h2>
+        <div class="statistics">
+            <div class="statistic-item">
+                <p class="statistic-value">{{ total_mailings }}</p>
+                <p>Количество рассылок всего</p>
+            </div>
+            <div class="statistic-item">
+                <p class="statistic-value">{{ total_active_mailings }}</p>
+                <p>Количество активных рассылок</p>
+            </div>
+            <div class="statistic-item">
+                <p class="statistic-value">{{ unique_mailings_clients }}</p>
+                <p>Количество уникальных клиентов для рассылок</p>
+            </div>
+            <div class="statistic-item">
+                <p class="statistic-value">{{ success_mailings }}</p>
+                <p>Количество успешных рассылок</p>
+            </div>
+            <div class="statistic-item">
+                <p class="statistic-value error-value">{{ error_mailings }}</p>
+                <p>Количество неудачных рассылок</p>
+            </div>
+        </div>
+        <hr class="section-divider">
+    </div>
+    <br>
+    <div class="section">
+        <h2 class="section-title">Популярные статьи:</h2>
+        <div class="blog-list">
+            {% for blog in three_random_blogs %}
+                <div class="blog-item">
+                    <h3 style="color: #39aa31;">{{ blog.heading }}</h3>
+                    <p>{{ blog.content }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
