@@ -14,7 +14,7 @@ from blog.models import Blog
 from mailing.forms import UserAuthenticationForm, UserRegistartionForm, UserPasswordResetForm, UserResetConfirmForm, \
     MailingForm, MailingMessageForm, ClientForm, UserForm
 from mailing.models import Mailing, MailingMessage, MailingTrying, Client, User
-from mailing.services import get_cache
+# from mailing.services import get_cache
 
 
 class UserListView(PermissionRequiredMixin, ListView):
@@ -139,7 +139,7 @@ class IndexView(TemplateView):
 class MailingListView(ListView):
     model = Mailing
     template_name = 'mailing/mailing_list.html'
-    queryset = get_cache(Mailing)
+    # queryset = get_cache(Mailing)
     extra_context = {
         'title': 'Рассылки'
     }
