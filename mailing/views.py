@@ -300,6 +300,7 @@ class ClientDetailView(UpdateView):
 
         context_data['formset'] = formset
         context_data['title'] = f'Редактирование | {client.fio}'
+
         return context_data
 
 class ClientCreateView(CreateView):
@@ -339,6 +340,7 @@ class ClientUpdateView(LoginRequiredMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         client = self.get_object()
         context['title'] = f'Редактирование | {client.fio}'
+
         return context
 
 class MailingReportView(LoginRequiredMixin, TemplateView):

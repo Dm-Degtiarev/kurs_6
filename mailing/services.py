@@ -49,6 +49,7 @@ def send_message():
                 server_response=str(_ex)
             )
 
+
 def create_mailing_list():
     mailing_list = []
     mailings = Mailing.objects.filter(status='launched', active_flg=True)

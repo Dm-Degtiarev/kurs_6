@@ -56,7 +56,6 @@ class Mailing(Model):
             ('setting_the_mailing_status', 'Сan set mailing status'),
         ]
 
-
     def __str__(self):
         return self.name
 
