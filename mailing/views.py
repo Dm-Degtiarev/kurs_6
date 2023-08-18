@@ -64,7 +64,7 @@ class UserRegistrationView(CreateView):
 
         topic = 'Верификация Skychimp'
         message = f'Добрый день, {user.first_name}! Подтвердите свою учетную запись, перейдя по этой ссылке: ' \
-                  f'http://localhost:8000{reverse_lazy("mailing:verify_account", kwargs={"user_pk": user.pk})}.'
+                  f'http://37.143.12.161{reverse_lazy("mailing:verify_account", kwargs={"user_pk": user.pk})}.'
         from_email = settings.EMAIL_HOST_USER
         recipients = [user.email]
         send_mail(
